@@ -1,0 +1,23 @@
+# ---------- 依赖 ----------
+node_modules/
+
+# ---------- 构建与打包产物 ----------
+dist/
+release/
+*.zip
+
+# ---------- 本地测试产物（scripts/test.js 生成的音频/视频样本）----------
+.test-output/
+
+# ---------- 第三方二进制：不随仓库分发，用 `npm run fetch:bin` 获取 ----------
+# 只保留说明文件，其余全部忽略
+resources/bin/*
+!resources/bin/README.md
+resources/tmp/
+
+# ---------- 编辑器与系统文件 ----------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

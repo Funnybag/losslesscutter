@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LosslessCutter</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <nav class="sidebar" id="sidebar">
+        <button class="sidebar-toggle" id="sidebar-toggle" title="收起侧边栏">
+          <span class="ico" data-icon="panel-left"></span>
+        </button>
+        <button class="tool-btn active" data-tool="audio" title="音频无损剪切">
+          <span class="ico" data-icon="audio-wave"></span><span class="tool-name">音频</span>
+        </button>
+        <button class="tool-btn" data-tool="video" title="视频无损剪切">
+          <span class="ico" data-icon="film"></span><span class="tool-name">视频</span>
+        </button>
+      </nav>
+
+      <div class="main">
+        <nav class="menubar" id="menubar">
+          <div class="menu" data-menu="file"><span class="menu-label">文件</span><span class="ico caret" data-icon="chevron"></span>
+            <div class="menu-dropdown">
+              <div class="menu-item" data-action="open"><span>打开文件…</span><span class="kbd">Ctrl+O</span></div>
+              <div class="menu-item" data-action="open-merge"><span>添加视频（合并）…</span><span class="kbd">Ctrl+M</span></div>
+              <div class="menu-sep"></div>
+              <div class="menu-item" data-action="quit"><span>退出</span><span class="kbd">Ctrl+Q</span></div>
+            </div>
+          </div>
+          <div class="menu" data-menu="edit"><span class="menu-label">编辑</span><span class="ico caret" data-icon="chevron"></span>
+            <div class="menu-dropdown">
+              <div class="menu-item" data-action="select-all"><span>选择整段</span><span class="kbd">Ctrl+A</span></div>
+            </div>
+          </div>
+          <div class="menu" data-menu="view"><span class="menu-label">视图</span><span class="ico caret" data-icon="chevron"></span>
+            <div class="menu-dropdown">
+              <div class="menu-item" data-action="zoom-in"><span>放大时间轴</span><span class="kbd">+</span></div>
+              <div class="menu-item" data-action="zoom-out"><span>缩小时间轴</span><span class="kbd">-</span></div>
+              <div class="menu-item" data-action="zoom-fit"><span>适应窗口</span></div>
+            </div>
+          </div>
+          <div class="menu" data-menu="help"><span class="menu-label">帮助</span><span class="ico caret" data-icon="chevron"></span>
+            <div class="menu-dropdown">
+              <div class="menu-item" data-action="shortcuts"><span>快捷键说明</span></div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- ============ 音频工具 ============ -->
+        <div class="tool-view" id="tool-audio">
+          <div class="tabbar" id="tabbar-audio"></div>
+          <header class="toolbar">
+            <button id="btn-open" class="btn primary"><span class="ico" data-icon="folder"></span><span>打开音频文件</span></button>
+            <div class="file-info">
+              <span class="fname" id="fname">未打开文件（也可直接拖入）</span>
+              <span class="fmeta" id="fmeta"></span>
+            </div>
+            <div class="transport">
+              <button id="btn-play" title="播放/暂停 (空格)"><span class="ico" data-icon="play"></span></button>
+              <button id="btn-stop" title="停止"><span class="ico" data-icon="stop"></span></button>
+              <span class="play-time" id="play-time">00:00:00.000</span>
+            </div>
+            <div class="zoom-controls">
+              <button id="btn-zoom-out" title="缩小时间轴"><span class="ico" data-icon="zoom-out"></span></button>
+              <span id="zoom-label" title="像素/秒">适配</span>
+              <button id="btn-zoom-in" title="放大时间轴"><span class="ico" data-icon="zoom-in"></span></button>
+              <button id="btn-zoom-fit" title="适应窗口"><span class="ico" data-icon="fit"></span></button>
+            </div>
+          </header>
+
+          <main class="wave-area" id="wave-area">
+            <div class="timeline-strip" id="timeline"></div>
+            <div class="wave-hint" id="wave-hint">请打开一个音频文件开始编辑</div>
+            <div id="waveform"></div>
+            <div class="playhead" id="playhead"><div class="playhead-grab" id="playhead-grab" title="拖动播放线"></div></div>
+            <div class="gain-badge" id="gain-badge" hidden></div>
+          </main>
+
+          <section class="panel">
+            <div class="card">
+              <h3><span class="ico" data-icon="scissors"></span>剪切选区</h3>
+              <div class="row">
+                <span class="lbl">播放线步长</span>
+                <select id="step-select">
+                  <option value="sample">1 采样</option>
+                  <option value="0.0001">0.1 ms</option>
+                  <option value="0.001">1 ms</option>
+                  <option value="0.005">5 ms</option>
+                  <option value="0.01" selected>10 ms</option>
+                  <option value="0.05">50 ms</option>
+                  <option value="0.1">100 ms</option>
+                  <option value="frame">1 帧</option>
+                </select>
+                <span class="kbd-hint">滚轮缩放 · Alt+滚轮平移</span>
+              </div>
+              <div class="row times">
+                <div class="timebox">
+                  <label>入点</label>
+                  <input id="in-time" readonly value="00:00:00.000" />
+                  <div class="sub" id="in-samples"></div>
+                </div>
+                <div class="timebox">
+                  <label>出点</label>
+                  <input id="out-time" readonly value="00:00:00.000" />
+                  <div class="sub" id="out-samples"></div>
+                </div>
+                <div class="timebox">
+                  <label>选区时长</label>
+                  <input id="sel-dur" readonly value="00:00:00.000" />
+                  <div class="sub" id="dur-note"></div>
+                </div>
+              </div>
+              <div class="io-row">
+                <button id="btn-set-in" class="io" title="以播放线位置作为入点 (I)"><span class="ico" data-icon="set-in"></span><span>设为入点</span><span class="kbd">I</span></button>
+                <button id="btn-set-out" class="io" title="以播放线位置作为出点 (O)"><span class="ico" data-icon="set-out"></span><span>设为出点</span><span class="kbd">O</span></button>
+              </div>
+              <div class="nudge-row">
+                <button id="nudge-prev-big" title="步长×10 左移播放线"><span class="ico" data-icon="step-back"></span></button>
+                <button id="nudge-prev"><span class="ico" data-icon="step-back"></span><span>播放线左移</span></button>
+                <button id="nudge-next"><span>播放线右移</span><span class="ico" data-icon="step-fwd"></span></button>
+                <button id="nudge-next-big" title="步长×10 右移播放线"><span class="ico" data-icon="step-fwd"></span></button>
+              </div>
+              <div class="hint" id="cut-hint"></div>
+            </div>
+
+            <div class="card">
+              <h3><span class="ico" data-icon="volume"></span>声音增益</h3>
+              <div class="row gain-row">
+                <input type="range" id="gain-slider" min="-20" max="20" step="0.5" value="0" />
+                <input type="number" id="gain-input" value="0" step="0.5" min="-20" max="20" />
+                <span class="unit">dB</span>
+              </div>
+              <div class="hint" id="gain-hint"></div>
+              <p class="note">增益随「导出」应用到选区；播放与波形会实时预览（0 dB 表示不改变）。</p>
+            </div>
+
+            <div class="card a-settings">
+              <h3><span class="ico" data-icon="settings"></span>保存设置</h3>
+              <div class="row">
+                <span class="lbl">输出位置</span>
+                <label class="radio"><input type="radio" name="outdir" value="same" checked /> 原文件目录</label>
+                <label class="radio"><input type="radio" name="outdir" value="custom" /> 指定文件夹</label>
+                <button id="btn-browse" class="mini">浏览…</button>
+              </div>
+              <div class="row custom-row" id="custom-dir-row" hidden>
+                <span class="dir" id="custom-dir-label">（未选择）</span>
+              </div>
+              <div class="row">
+                <span class="lbl">输出格式</span>
+                <select id="format-select">
+                  <option value="same">保持原格式</option>
+                  <option value="mp3">转换为 MP3</option>
+                  <option value="flac">转换为 FLAC</option>
+                </select>
+                <span class="kbd-hint">格式转换会按目标格式编码</span>
+              </div>
+              <button id="btn-export" class="btn primary wide" disabled>导出文件（剪切 + 增益）</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============ 视频工具 ============ -->
+        <div class="tool-view" id="tool-video" hidden>
+          <div class="tabbar" id="tabbar-video"></div>
+          <header class="toolbar">
+            <button id="v-btn-open" class="btn primary"><span class="ico" data-icon="film"></span><span>打开视频文件</span></button>
+            <div class="file-info">
+              <span class="fname" id="v-fname">未打开文件（也可直接拖入）</span>
+              <span class="fmeta" id="v-fmeta"></span>
+            </div>
+            <div class="transport">
+              <button id="v-tb-set-in" class="tb-io" title="以播放线位置作为入点 (I)"><span class="ico" data-icon="set-in"></span><span>入点</span><span class="kbd">I</span></button>
+              <button id="v-tb-set-out" class="tb-io" title="以播放线位置作为出点 (O)"><span class="ico" data-icon="set-out"></span><span>出点</span><span class="kbd">O</span></button>
+              <span class="tb-sep"></span>
+              <button id="v-btn-play" title="播放/暂停 (空格)"><span class="ico" data-icon="play"></span></button>
+              <button id="v-btn-stop" title="停止"><span class="ico" data-icon="stop"></span></button>
+              <span class="play-time" id="v-play-time">00:00:00.000</span>
+            </div>
+            <div class="zoom-controls">
+              <button id="v-btn-zoom-out" title="缩小时间轴"><span class="ico" data-icon="zoom-out"></span></button>
+              <span id="v-zoom-label" title="秒/缩略图">适配</span>
+              <button id="v-btn-zoom-in" title="放大时间轴"><span class="ico" data-icon="zoom-in"></span></button>
+              <button id="v-btn-zoom-fit" title="适应窗口"><span class="ico" data-icon="fit"></span></button>
+            </div>
+          </header>
+
+          <main class="video-area" id="video-area">
+            <div class="video-preview" id="video-preview">
+              <video id="video-el" controls playsinline></video>
+            </div>
+            <div class="video-hint" id="video-hint">请打开一个视频文件开始编辑（支持拖入）</div>
+            <div class="filmstrip-area" id="filmstrip-area">
+              <div class="filmstrip-scroll" id="filmstrip-scroll">
+                <div class="filmstrip-track" id="filmstrip-track">
+                  <div class="v-ruler" id="v-ruler"></div>
+                  <div class="filmstrip-body" id="filmstrip-body">
+                    <img id="filmstrip-img" alt="" draggable="false">
+                    <div class="v-keys" id="v-keys"></div>
+                    <div class="v-region" id="v-region"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="v-playhead" id="v-playhead"><div class="v-playhead-grab" id="v-playhead-grab" title="拖动播放线"></div></div>
+              <div class="gain-badge v-badge" id="v-badge" hidden></div>
+            </div>
+
+            <div class="v-merge-area" id="v-merge-area" hidden>
+              <div class="v-merge-bar">
+                <span class="v-merge-title" id="v-merge-title">合并轨道：0 个片段</span>
+              </div>
+              <div class="v-merge-scroll" id="v-merge-scroll">
+                <div class="v-merge-track" id="v-merge-track">
+                  <div class="v-merge-ruler" id="v-merge-ruler"></div>
+                  <div class="v-merge-body" id="v-merge-body"></div>
+                  <div class="v-merge-region" id="v-merge-region"></div>
+                  <div class="v-merge-playhead" id="v-merge-playhead"></div>
+                </div>
+              </div>
+            </div>
+          </main>
+
+          <section class="panel v-panel">
+            <div class="card v-cut">
+              <div class="v-cut-ctrls">
+                <select id="v-step-select" title="播放线移动步长">
+                  <option value="keyframe">上一 / 下一关键帧</option>
+                  <option value="frame" selected>1 帧</option>
+                  <option value="0.1">0.1 秒</option>
+                  <option value="0.5">0.5 秒</option>
+                  <option value="1">1 秒</option>
+                </select>
+                <button id="v-btn-set-in" class="io" title="以播放线位置作为入点 (I)"><span class="ico" data-icon="set-in"></span><span>入点</span><span class="kbd">I</span></button>
+                <button id="v-btn-set-out" class="io" title="以播放线位置作为出点 (O)"><span class="ico" data-icon="set-out"></span><span>出点</span><span class="kbd">O</span></button>
+                <button id="v-nudge-prev" title="播放线左移"><span class="ico" data-icon="step-back"></span></button>
+                <button id="v-nudge-next" title="播放线右移"><span class="ico" data-icon="step-fwd"></span></button>
+              </div>
+              <div class="v-cut-times">
+                <div class="timebox"><label>入点</label><input id="v-in-time" readonly value="00:00:00.000" /></div>
+                <div class="timebox"><label>出点</label><input id="v-out-time" readonly value="00:00:00.000" /></div>
+                <div class="timebox"><label>时长</label><input id="v-sel-dur" readonly value="00:00:00.000" /></div>
+              </div>
+            </div>
+
+            <div class="card v-info">
+              <h3><span class="ico" data-icon="film"></span>视频信息</h3>
+              <div class="info-list" id="v-info">（未打开文件）</div>
+            </div>
+
+            <div class="card v-gain">
+              <h3><span class="ico" data-icon="volume"></span>声音增益</h3>
+              <div class="row gain-row">
+                <input type="range" id="v-gain-slider" min="-20" max="20" step="0.5" value="0" title="音量增益（dB）" />
+                <input type="number" id="v-gain-input" value="0" step="0.5" min="-20" max="20" />
+                <span class="unit">dB</span>
+              </div>
+              <div class="hint" id="v-gain-hint"></div>
+            </div>
+
+            <div class="card v-settings">
+              <h3><span class="ico" data-icon="settings"></span>保存设置</h3>
+              <div class="row">
+                <label class="radio"><input type="radio" name="v-outdir" value="same" checked /> 原目录</label>
+                <label class="radio"><input type="radio" name="v-outdir" value="custom" /> 指定</label>
+                <button id="v-btn-browse" class="mini">浏览…</button>
+              </div>
+              <div class="row" id="v-custom-dir-row" hidden>
+                <span class="dir" id="v-custom-dir-label">（未选择）</span>
+              </div>
+              <button id="v-btn-export" class="btn primary wide" disabled>导出（无损剪切）</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============ 合并工具 ============ -->
+        <footer class="statusbar">
+          <span id="status-text">就绪</span>
+          <div class="progress"><div id="progress-bar"></div></div>
+        </footer>
+      </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

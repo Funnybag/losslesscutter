@@ -1,0 +1,40 @@
+# 统一换行符，避免 Windows / Linux 协作时整文件 diff
+* text=auto eol=lf
+
+*.js    text eol=lf
+*.cjs   text eol=lf
+*.mjs   text eol=lf
+*.json  text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.md    text eol=lf
+*.yml   text eol=lf
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
+# 二进制文件禁止任何转换
+*.exe   binary
+*.dll   binary
+*.so    binary
+*.node  binary
+*.zip   binary
+*.7z    binary
+*.tar   binary
+*.gz    binary
+*.xz    binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.mp3   binary
+*.flac  binary
+*.wav   binary
+*.aiff  binary
+*.mp4   binary
+*.mkv   binary
+*.mov   binary
+
+# GitHub 语言统计：主进程与渲染层都算 JavaScript
+electron/** linguist-language=JavaScript
+src/**      linguist-language=JavaScript

@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-renderer:
+    runs-on: ubuntu-latest
+    env:
+      # 构建渲染层不需要 Electron 运行时，跳过下载可省下上百 MB 与时间
+      ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 语法检查脚本
+        run: |
+          node --check scripts/fetch-binaries.js
+          node --check electron/main.js
+          node --check electron/audio.js
+          node --check electron/video.js
+
+      - name: 构建界面
+        run: npm run build:renderer
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
